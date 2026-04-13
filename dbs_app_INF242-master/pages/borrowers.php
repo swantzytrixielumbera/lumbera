@@ -1,7 +1,9 @@
 <?php
-
 require_once('../classes/database.php');
 $con = new database();
+
+$borrowerCreateStatus = null;
+$borrowerCreateMessage = '';
 
 if(isset($_POST['add_borrower'])){
   // First step: collect and validate the input
@@ -10,21 +12,32 @@ if(isset($_POST['add_borrower'])){
   $borrower_firstname = $_POST['borrower_firstname'];
   $borrower_lastname = $_POST['borrower_lastname'];
   $email = $_POST['borrower_email'];
-  $phone = $_POST['borrower_phone_number'];
+  $borrower_phone_number = $_POST['borrower_phone_number'];
   $borrower_member_since = $_POST['member_since'];
   $is_active = $_POST['is_active'];
   $temp_password = $_POST['temp_password'];
 
-  // Second step: hash the password
-  $user_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
+    // Second step: hash the password
+    $user_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
 
+  try{
   // Step 3: Insert into User table and get a new user_id
   $user_id = $con->insertUser($email, $user_password_hash, $is_active);
 
   // Step 4: Insert into Borrowers
   $borrower_id = $con->insertBorrowers($email, $borrower_firstname, $borrower_lastname, $borrower_phone_number, $borrower_member_since, $is_active);
-}
 
+  // Step 5: Insert Borrower User Mapping
+  $con->insertBorroweruser($user_id, $borrower_id);
+
+  $borrowerCreateStatus = 'success';
+  $borrowerCreateMessage = 'Borrower crreated successfully';
+
+}catch(Exception $e){
+  $borrowerCreateStatus = 'error';
+  $borrowerCreateMessage = 'Error creating borrower';
+}
+}
 ?>
 
 <!doctype html>
@@ -36,6 +49,7 @@ if(isset($_POST['add_borrower'])){
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -263,5 +277,28 @@ if(isset($_POST['add_borrower'])){
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+<script src="../sweetalert/dist/sweetalert2.js"></script>
+<script>
+const createStatus = <?php echo json_encode($borrowerCreateStatus) ?>;
+const createMessage = <?php echo json_encode($borrowerCreateMessage) ?>;
+
+if(createStatus == 'success'){
+  Swal.fire({
+    icon: 'success',
+    title:'success',
+    text: createMessage,
+    confirmButtonText: 'OK'
+  });
+}
+else if(createStatus == 'error'){
+  Swal.fire({
+    icon: 'error',
+    title:'error', 
+    text: createMessage,
+    confirmButtonText: 'OK'
+  });
+}
+</script>
 </body>
 </html>
