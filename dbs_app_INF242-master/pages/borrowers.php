@@ -35,7 +35,33 @@ if(isset($_POST['add_borrower'])){
 
 }catch(Exception $e){
   $borrowerCreateStatus = 'error';
-  $borrowerCreateMessage = 'Error creating borrower';
+  $borrowerCreateMessage = $e->getMessage(); //actual error
+}
+}
+
+if(isset($_POST['addborroweraddress'])){
+
+  
+  $borrower_id = $_POST['borrower_id'];
+  $ba_house_number = $_POST['ba_house_number'];
+  $ba_street = $_POST['ba_street'];
+  $ba_barangay = $_POST['ba_barangay'];
+  $ba_city = $_POST['ba_city'];
+  $ba_province = $_POST['ba_province'];
+  $ba_postal_code = $_POST['ba_postal_code'];
+  $is_primary = $_POST['is_primary'];
+
+   
+  try{
+
+  $ba_id = $con->insertBorroweraddress($borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $is_primary);
+
+  $borrowerCreateStatus = 'success';
+  $borrowerCreateMessage = 'Borrower address crreated successfully';
+
+}catch(Exception $e){
+  $borrowerCreateStatus = 'error';
+  $borrowerCreateMessage = $e->getMessage();
 }
 }
 ?>
@@ -198,11 +224,13 @@ if(isset($_POST['add_borrower'])){
                 <label class="form-label">Borrower</label>
                 <select class="form-select" name="borrower_id" required>
                   <option value="">Select borrower</option>
-                  <option value="1">Juan Dela Cruz</option>
-                  <option value="2">Maria Santos</option>
-                  <option value="3">Mark Reyes</option>
-                  <option value="4">Ana Bautista</option>
-                  <option value="6">Grace Mendoza</option>
+                  <?php
+                  $allborrowers = $con->viewborrowers();
+                  foreach($allborrowers as $borrower){
+                    echo '<option value="'.$borrower['borrower_id'] .'">'.'['.$borrower['borrower_id'].'] '.$borrower['borrower_firstname'].' '.$borrower['borrowers_lastname'].'</option>';
+                  }
+                  ?>
+
                 </select>
               </div>
               <div class="col-6">
@@ -237,7 +265,7 @@ if(isset($_POST['add_borrower'])){
                 </select>
               </div>
               <div class="col-12">
-                <button class="btn btn-outline-primary w-100" type="submit">Add Address</button>
+                <button name = "addborroweraddress" class="btn btn-outline-primary w-100" type="submit">Add Address</button>
               </div>
             </form>
           </div>
@@ -286,7 +314,7 @@ const createMessage = <?php echo json_encode($borrowerCreateMessage) ?>;
 if(createStatus == 'success'){
   Swal.fire({
     icon: 'success',
-    title:'success',
+    title:'Success',
     text: createMessage,
     confirmButtonText: 'OK'
   });
@@ -294,11 +322,12 @@ if(createStatus == 'success'){
 else if(createStatus == 'error'){
   Swal.fire({
     icon: 'error',
-    title:'error', 
+    title:'Error', 
     text: createMessage,
     confirmButtonText: 'OK'
   });
 }
+
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 class database{
 
     function opencon(): PDO{
-        return new PDO("mysql:host=localhost; dbname=lumbera_dbs", username:"root", password: "");
+        return new PDO("mysql:host=localhost; dbname=DBS", username:"root", password: "");
     }
 
 function insertUser($email, $user_password_hash, $is_active){
@@ -55,6 +55,47 @@ function insertBorroweruser($user_id, $borrower_id){
         }
         throw $e;
     }
+}
+function insertBorroweraddress($borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $is_primary){
+    $con = $this->opencon();
+    try{
+        $con->beginTransaction();
+        $stmt = $con->prepare("INSERT INTO Borroweraddress (borrower_id, ba_house_number, ba_street, ba_barangay, ba_city, ba_province, ba_postal_code, is_primary) VALUES (?,?,?,?,?,?,?,?) ");
+        $stmt->execute([$borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $is_primary]);
+        $ba_id =$con->lastInsertId();
+        $con->commit();
+        return $ba_id;
+    }catch(PDOException $e){
+        if($con->inTransaction()){
+            $con->rollBack();
+         
+        }
+        throw $e;
+    }
+}
+
+function insertBooks($book_title, $book_isbn, $book_publication, $book_edition, $book_publisher){
+    $con = $this->opencon();
+    try{
+        $con->beginTransaction();
+        $stmt = $con->prepare("INSERT INTO Books (book_title, book_isbn, book_publication, book_edition, book_publisher) VALUES (?,?,?,?,?) ");
+        $stmt->execute([$book_title, $book_isbn, $book_publication, $book_edition, $book_publisher]);
+        $book_id =$con->lastInsertId();
+        $con->commit();
+        return $book_id;
+    }catch(PDOException $e){
+        if($con->inTransaction()){
+            $con->rollBack();
+        }
+        throw $e;
+    }
+}
+
+
+
+function viewborrowers(){
+    $con = $this->opencon();
+    return $con->query("SELECT * FROM borrowers")->fetchAll();
 }
 }
 

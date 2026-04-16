@@ -1,3 +1,29 @@
+<?php
+require_once('../classes/database.php');
+$con = new database();
+
+if(isset($_POST['addbook'])){
+
+  
+  $book_title = $_POST['book_title'];
+  $book_isbn = $_POST['book_isbn'];
+  $book_publication = $_POST['book_publication_year'];
+  $book_edition = $_POST['book_edition'];
+  $book_publisher = $_POST['book_publisher'];
+
+  try{
+
+  $book_id = $con->insertBooks($book_title, $book_isbn, $book_publication, $book_edition, $book_publisher);
+
+  $borrowerCreateStatus = 'success';
+  $borrowerCreateMessage = 'Book added Succesfully';
+
+}catch(Exception $e){
+  $borrowerCreateStatus = 'error';
+  $borrowerCreateMessage = $e->getMessage();
+}
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,6 +33,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -61,7 +88,7 @@
             <label class="form-label">Publisher</label>
             <input class="form-control" name="book_publisher" placeholder="optional">
           </div>
-          <button class="btn btn-primary w-100" type="submit">Save Book</button>
+          <button name = "addbook" class="btn btn-primary w-100" type="submit">Save Book</button>
         </form>
       </div>
 
@@ -251,5 +278,28 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+<script src="../sweetalert/dist/sweetalert2.js"></script>
+<script>
+const createStatus = <?php echo json_encode($borrowerCreateStatus) ?>;
+const createMessage = <?php echo json_encode($borrowerCreateMessage) ?>;
+
+if(createStatus == 'success'){
+  Swal.fire({
+    icon: 'success',
+    title:'Success',
+    text: createMessage,
+    confirmButtonText: 'OK'
+  });
+}
+else if(createStatus == 'error'){
+  Swal.fire({
+    icon: 'error',
+    title:'Error', 
+    text: createMessage,
+    confirmButtonText: 'OK'
+  });
+}
+</script>
 </body>
 </html>
