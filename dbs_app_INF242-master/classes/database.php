@@ -3,7 +3,7 @@
 class database{
 
     function opencon(): PDO{
-        return new PDO("mysql:host=localhost; dbname=DBS", username:"root", password: "");
+        return new PDO("mysql:host=localhost; dbname=DBS_lumbera", username:"root", password: "");
     }
 
 function insertUser($email, $user_password_hash, $is_active){
@@ -91,11 +91,31 @@ function insertBooks($book_title, $book_isbn, $book_publication, $book_edition, 
     }
 }
 
-
+function insertbookcopy($book_id, $status){
+    $con = $this->opencon();
+    try{
+        $con->beginTransaction();
+        $stmt = $con->prepare("INSERT INTO bookcopy (book_id, status) VALUES (?,?) ");
+        $stmt->execute([$book_id, $status]);
+        $book_id =$con->lastInsertId();
+        $con->commit();
+        return true;
+    }catch(PDOException $e){
+        if($con->inTransaction()){
+            $con->rollBack();
+        }
+        throw $e;
+    }
+}
 
 function viewborrowers(){
     $con = $this->opencon();
     return $con->query("SELECT * FROM borrowers")->fetchAll();
+}
+
+function viewbooks(){
+    $con = $this->opencon();
+    return $con->query("SELECT * FROM books")->fetchAll();
 }
 }
 
