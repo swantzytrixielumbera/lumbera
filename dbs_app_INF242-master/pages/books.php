@@ -39,7 +39,64 @@ if (isset($_POST['addbookcopy'])) {
     $borrowerCreateMessage = $e->getMessage();
   }
 }
+
+if (isset($_POST['updatebook'])) {
+
+  $book_id = $_POST['book_id'];
+  $book_title = $_POST['book_title'];
+  $book_isbn = $_POST['book_isbn'];
+  $book_publication = $_POST['book_publication'];
+  $book_publisher = $_POST['book_publisher'];
+
+
+  try {
+
+    $book_id = $con->updatebook($book_id, $book_title, $book_isbn, $book_publication, $book_publisher);
+
+    $borrowerCreateStatus = 'success';
+    $borrowerCreateMessage = 'Bookcopy added Succesfully';
+  } catch (Exception $e) {
+    $borrowerCreateStatus = 'error';
+    $borrowerCreateMessage = $e->getMessage();
+  }
+}
+
+if (isset($_POST['addbookauthors'])) {
+
+  $book_id = $_POST['book_id'];
+  $author_id = $_POST['author_id'];
+
+  try {
+
+    $copy_id = $con->insertbookauthors($book_id, $author_id);
+
+    $borrowerCreateStatus = 'success';
+    $borrowerCreateMessage = 'Bookcopy added Succesfully';
+  } catch (Exception $e) {
+    $borrowerCreateStatus = 'error';
+    $borrowerCreateMessage = $e->getMessage();
+  }
+  
+}
+
+if (isset($_POST['addbookgenres'])) {
+
+  $book_id = $_POST['book_id'];
+  $genre_id = $_POST['genre_id'];
+
+  try {
+
+    $copy_id = $con->insertbookgenres($book_id, $genre_id);
+
+    $borrowerCreateStatus = 'success';
+    $borrowerCreateMessage = 'Bookcopy added Succesfully';
+  } catch (Exception $e) {
+    $borrowerCreateStatus = 'error';
+    $borrowerCreateMessage = $e->getMessage();
+  }
+}
 ?>
+
 <!doctype html>
 <html lang="en">
 
@@ -170,32 +227,35 @@ if (isset($_POST['addbookcopy'])) {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>Noli Me Tangere</td>
-                  <td>9789710810736</td>
-                  <td>1887</td>
-                  <td>National Book Store</td>
-                  <td>3</td>
-                  <td><span class="badge text-bg-success">2</span></td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookModal">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>4</td>
-                  <td>Smaller and Smaller Circles</td>
-                  <td>9789712721768</td>
-                  <td>2002</td>
-                  <td>Ateneo de Manila University Press</td>
-                  <td>2</td>
-                  <td><span class="badge text-bg-warning">1</span></td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookModal">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                  </td>
-                </tr>
+                <?php
+                $allbooks = $con->viewbook();
+              foreach ($allbooks as $book) {
+              echo '<tr>';
+              echo'<td>' . $book['book_id'] . '</td>';
+              echo'<td>' . $book['book_title'] . '</td>';
+              echo'<td>' . $book['book_isbn'] . '</td>';
+              echo'<td>' . $book['book_publication'] . '</td>';
+              echo'<td>' . $book['book_publisher'] . '</td>';
+              echo'<td class="text-center">' . $book['Copies'] . '</td>';
+              echo'<td class="text-center"><span class="badge text-bg-success">' . $book['Available_Copies'] . '</span></td>';
+              echo'<td class="text-end">';
+              echo'<div class="btn-group" role="group">';
+ 
+              echo'<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editBookModal"
+              data-book-id="' . $book['book_id'] . '"
+              data-book-title="' . htmlspecialchars($book['book_title'], ENT_QUOTES) . '"
+              data-book-isbn="' . htmlspecialchars($book['book_isbn'], ENT_QUOTES) . '"
+              data-book-year="' . $book['book_publication'] . '"
+              data-book-publisher="' . htmlspecialchars($book['book_publisher'], ENT_QUOTES) . '"
+              
+              >Edit</button>';
+ 
+              echo'<button type="button" class="btn btn-danger">Delete</button>';
+              echo'</div>';
+              echo'</td>';
+              echo'</tr>';
+                }?>
+
               </tbody>
             </table>
           </div>
@@ -212,20 +272,27 @@ if (isset($_POST['addbookcopy'])) {
                   <div class="col-12 col-md-6">
                     <select class="form-select" name="book_id" required>
                       <option value="">Select book</option>
-                      <option value="1">Noli Me Tangere</option>
-                      <option value="2">El Filibusterismo</option>
+                      <?php
+                $allbooks = $con->viewbooks();
+                foreach ($allbooks as $books) {
+                  echo '<option value="' . $books['book_id'] . '">' . $books['book_title'] . '</option>';
+                }
+                ?>
                     </select>
                   </div>
                   <div class="col-12 col-md-6">
                     <select class="form-select" name="author_id" required>
                       <option value="">Select author</option>
-                      <option value="1">Jose Rizal</option>
-                      <option value="2">Amado Hernandez</option>
-                      <option value="3">F. H. Batacan</option>
+                      <?php
+                $allauthors = $con->viewauthors();
+                foreach ($allauthors as $authors) {
+                  echo '<option value="' . $authors['author_id'] . '">' . $authors['author_firstname'] . ' ' . $authors['author_lastname'] . '</option>';
+                }
+                ?>
                     </select>
                   </div>
                   <div class="col-12">
-                    <button class="btn btn-outline-primary w-100" type="submit">Assign</button>
+                    <button name="addbookauthors" class="btn btn-outline-primary w-100" type="submit">Assign</button>
                   </div>
                 </form>
                 <div class="small-muted mt-2">Unique constraint prevents duplicate (book_id, author_id).</div>
@@ -241,19 +308,27 @@ if (isset($_POST['addbookcopy'])) {
                   <div class="col-12 col-md-6">
                     <select class="form-select" name="book_id" required>
                       <option value="">Select book</option>
-                      <option value="1">Noli Me Tangere</option>
-                      <option value="2">El Filibusterismo</option>
+                      <?php
+                $allbooks = $con->viewbooks();
+                foreach ($allbooks as $books) {
+                  echo '<option value="' . $books['book_id'] . '">' . $books['book_title'] . '</option>';
+                }
+                ?>
                     </select>
                   </div>
                   <div class="col-12 col-md-6">
                     <select class="form-select" name="genre_id" required>
                       <option value="">Select genre</option>
-                      <option value="1">Classic</option>
-                      <option value="5">Philippine Literature</option>
+                      <?php
+                $allgenre = $con->viewgenres();
+                foreach ($allgenre as $genres) {
+                  echo '<option value="' . $genres['genre_id'] . '">' . $genres['genre_name'] . '</option>';
+                }
+                ?>
                     </select>
                   </div>
                   <div class="col-12">
-                    <button class="btn btn-outline-primary w-100" type="submit">Assign</button>
+                    <button name="addbookgenres"class="btn btn-outline-primary w-100" type="submit">Assign</button>
                   </div>
                 </form>
                 <div class="small-muted mt-2">Unique constraint prevents duplicate (genre_id, book_id).</div>
@@ -276,25 +351,40 @@ if (isset($_POST['addbookcopy'])) {
         </div>
         <div class="modal-body">
           <!-- Later in PHP: load existing values -->
-          <form action="#" method="POST">
+          <form action="books.php" method="POST">
+            <input type="hidden" name="book_id" id="edit_book_id">
+
             <div class="mb-3">
               <label class="form-label">Title</label>
-              <input class="form-control" value="Noli Me Tangere">
+              <input class="form-control"
+              name="book_title" id="edit_book_title">
             </div>
+
             <div class="mb-3">
               <label class="form-label">ISBN</label>
-              <input class="form-control" value="9789710810736">
+              <input class="form-control" 
+              name="book_isbn" id="edit_book_isbn">
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Publication Year</label>
+              <input class="form-control" 
+              name="book_publication" id="edit_book_year">
+            </div>
+
             <div class="mb-3">
               <label class="form-label">Publisher</label>
-              <input class="form-control" value="National Book Store">
+              <input class="form-control" 
+              name="book_publisher" id="edit_book_publisher">
             </div>
-            <button class="btn btn-primary w-100" type="button">Save Changes</button>
+
+            <button name="updatebook" class="btn btn-primary w-100" type="submit">Save Changes</button>
           </form>
         </div>
       </div>
     </div>
   </div>
+  
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
@@ -317,7 +407,21 @@ if (isset($_POST['addbookcopy'])) {
         text: createMessage,
         confirmButtonText: 'OK'
       });
-    }
+    } 
+
+
+const editModal = document.getElementById('editBookModal');
+ 
+editModal.addEventListener('show.bs.modal', function (event) {
+  const btn = event.relatedTarget;
+  if (!btn) return;
+ 
+  document.getElementById('edit_book_id').value = btn.getAttribute('data-book-id') || '';
+  document.getElementById('edit_book_title').value = btn.getAttribute('data-book-title') || '';
+  document.getElementById('edit_book_isbn').value = btn.getAttribute('data-book-isbn') || '';
+  document.getElementById('edit_book_year').value = btn.getAttribute('data-book-year') || '';
+  document.getElementById('edit_book_publisher').value = btn.getAttribute('data-book-publisher') || '';
+});
   </script>
 </body>
 

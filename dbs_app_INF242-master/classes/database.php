@@ -98,7 +98,87 @@ function insertbookcopy($book_id, $status){
         $stmt = $con->prepare("INSERT INTO bookcopy (book_id, status) VALUES (?,?) ");
         $stmt->execute([$book_id, $status]);
         $book_id =$con->lastInsertId();
+        $con->commit(); 
+        return true;
+    }catch(PDOException $e){
+        if($con->inTransaction()){
+            $con->rollBack();
+        }
+        throw $e;
+    }
+}
+
+function viewbook()
+        {
+            $con = $this->opencon();
+            return $con->query("SELECT
+            Books.book_id,
+            Books.book_title,
+            Books.book_isbn,
+            Books.book_publication,
+            Books.book_publisher,
+            COUNT(BookCopy.copy_id) AS Copies,
+            SUM(BookCopy.status = 'Available') AS Available_Copies
+            FROM
+            Books
+            JOIN BookCopy ON Books.book_id = BookCopy.book_id
+            GROUP BY 1")->fetchAll();
+        }
+
+function updateBook($book_id, $title, $isbn, $year, $publisher)
+{
+    $con = $this->opencon();
+ 
+    try {
+        $con->beginTransaction();
+ 
+        $stmt = $con->prepare("
+            UPDATE Books
+            SET book_title = ?,
+                book_isbn = ?,
+                book_publication = ?,
+                book_publisher = ?
+            WHERE book_id = ?
+        ");
+ 
+        $stmt->execute([$title, $isbn, $year, $publisher, $book_id]);
+ 
         $con->commit();
+        return true; // Successfully updated
+ 
+    } catch (PDOException $e) {
+        if ($con->inTransaction()) {
+            $con->rollBack();
+        }
+        throw $e;
+    }
+}
+
+function insertbookauthors($book_id, $author_id){
+    $con = $this->opencon();
+    try{
+        $con->beginTransaction();
+        $stmt = $con->prepare("INSERT INTO bookauthor (book_id, author_id) VALUES (?,?) ");
+        $stmt->execute([$book_id, $author_id]);
+        $book_id =$con->lastInsertId();
+        $con->commit(); 
+        return true;
+    }catch(PDOException $e){
+        if($con->inTransaction()){
+            $con->rollBack();
+        }
+        throw $e;
+    }
+}
+
+function insertbookgenres($book_id, $genre_id){
+    $con = $this->opencon();
+    try{
+        $con->beginTransaction();
+        $stmt = $con->prepare("INSERT INTO bookgenre (book_id, genre_id) VALUES (?,?) ");
+        $stmt->execute([$book_id, $genre_id]);
+        $book_id =$con->lastInsertId();
+        $con->commit(); 
         return true;
     }catch(PDOException $e){
         if($con->inTransaction()){
@@ -116,6 +196,16 @@ function viewborrowers(){
 function viewbooks(){
     $con = $this->opencon();
     return $con->query("SELECT * FROM books")->fetchAll();
+}
+
+function viewauthors(){
+    $con = $this->opencon();
+    return $con->query("SELECT * FROM authors")->fetchAll();
+}
+
+function viewgenres(){
+    $con = $this->opencon();
+    return $con->query("SELECT * FROM genres")->fetchAll();
 }
 }
 
