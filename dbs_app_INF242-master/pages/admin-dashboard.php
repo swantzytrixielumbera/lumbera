@@ -1,3 +1,15 @@
+<?php
+
+require_once('../classes/database.php');
+$con = new database ();
+$bookcount = $con->countBook();
+
+$bookcopycount = $con->countAvailBook();
+
+$openloanscount = $con->countOpenLoans();
+
+$openoverdue_items = $con->countOverdueLoans();
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -43,25 +55,25 @@
           <div class="col-6 col-md-3">
             <div class="border rounded p-3 bg-white">
               <div class="small-muted">Total Books</div>
-              <div class="fs-4 fw-semibold">5</div>
+              <div class="fs-4 fw-semibold"><?php echo $bookcount;?> </div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="border rounded p-3 bg-white">
-              <div class="small-muted">Total Copies</div>
-              <div class="fs-4 fw-semibold">11</div>
+              <div class="small-muted">Copies Available</div>
+              <div class="fs-4 fw-semibold"><?php echo $bookcopycount;?></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="border rounded p-3 bg-white">
               <div class="small-muted">Open Loans</div>
-              <div class="fs-4 fw-semibold">2</div>
+              <div class="fs-4 fw-semibold"><?php echo $openloanscount;?></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="border rounded p-3 bg-white">
               <div class="small-muted">Overdue Items</div>
-              <div class="fs-4 fw-semibold">0</div>
+              <div class="fs-4 fw-semibold"><?php echo $openoverdue_items;?></div>
             </div>
           </div>
         </div>
@@ -81,27 +93,24 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1004</td>
-                <td>Ana Bautista</td>
-                <td><span class="badge text-bg-warning">OPEN</span></td>
-                <td>2026-02-15</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
-              <tr>
-                <td>1003</td>
-                <td>Mark Reyes</td>
-                <td><span class="badge text-bg-warning">OPEN</span></td>
-                <td>2026-01-10</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
-              <tr>
-                <td>1002</td>
-                <td>Maria Santos</td>
-                <td><span class="badge text-bg-success">CLOSED</span></td>
-                <td>2025-12-12</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
+              
+            <?php
+              $showloans = $con->viewloans();
+              foreach ($showloans as $loan) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($loan['loan_id']) . '</td>';
+                echo '<td>' . htmlspecialchars($loan['borrower_firstname']) . ' ' . htmlspecialchars($loan['borrower_lastname']) . '</td>';
+                if ($loan['loan_status'] === 'OPEN') {
+                  echo '<td>' . '<span class="badge text-bg-warning">' . htmlspecialchars($loan['loan_status']) . '</span>' . '</td>';
+                } else {
+                  echo '<td>' . '<span class="badge text-bg-success">' . htmlspecialchars($loan['loan_status']) . '</span>' . '</td>';
+                } 
+                echo '<td>' . htmlspecialchars($loan['loan_date']) . '</td>';
+                echo '<td>' . htmlspecialchars($loan['username']) . '</td>';
+                echo '</tr>';
+              }
+              ?>
+
             </tbody>
           </table>
         </div>

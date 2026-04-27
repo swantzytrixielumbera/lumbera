@@ -207,6 +207,46 @@ function viewgenres(){
     $con = $this->opencon();
     return $con->query("SELECT * FROM genres")->fetchAll();
 }
+
+function countBook(){
+    $con = $this->opencon();
+    return $con->query("SELECT COUNT(*) AS total_books FROM Books")->fetchColumn();
 }
+
+function countAvailBook(){
+    $con = $this->opencon();
+    return $con->query("SELECT SUM(status= 'Available') as Total_Books from Bookcopy")->fetchColumn();
+}
+
+function countOpenLoans(){
+    $con = $this->opencon();
+    return $con->query("SELECT COUNT(*) AS open_loans FROM loan WHERE loan_status = 'OPEN'")->fetchColumn();
+}
+
+function countOverdueLoans(){
+        $con = $this->opencon();
+        return $con->query("SELECT COUNT(*) AS overdue_loans FROM loan JOIN loanitem ON loan.loan_id = 
+        loanitem.loan_id WHERE loan.loan_status = 'OPEN' AND loanitem.li_duedate < CURDATE()")->fetchColumn();
+}
+
+
+
+function viewloans() {
+    $con = $this->opencon();
+    return $con->query ("SELECT loan.loan_id, 
+    borrowers.borrower_firstname, 
+    borrowers.borrower_lastname, 
+    loan.loan_status AS loan_status, 
+    loan.loan_date, 
+    users.username
+    FROM 
+       loan 
+    JOIN borrowers ON loan.borrower_id = borrowers.borrower_id 
+    JOIN users ON loan.processed_by_user_id = users.user_id 
+    ORDER BY loan.loan_date DESC")->fetchAll();
+    }
+}
+
+
 
 ?>
