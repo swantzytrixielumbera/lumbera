@@ -95,6 +95,23 @@ if (isset($_POST['addbookgenres'])) {
     $borrowerCreateMessage = $e->getMessage();
   }
 }
+
+if(isset($_POST['delete_books'])){
+    $book_id = $_POST['book_id'];
+    $book_title = $_POST['book_title'];
+
+    try {
+        $con->deletebooks($book_id);
+
+        $borrowerCreateStatus = 'success';
+        $borrowerCreateMessage = $book_title . " deleted successfully";
+
+    } catch (Exception $e) {
+
+        $borrowerCreateStatus = 'error';
+        $borrowerCreateMessage = "Cannot delete this book. It might have copies or transactions.";
+    }
+}
 ?>
 
 <!doctype html>
@@ -163,7 +180,7 @@ if (isset($_POST['addbookgenres'])) {
               <label class="form-label">Publisher</label>
               <input class="form-control" name="book_publisher" placeholder="optional">
             </div>
-            <button name="addbook" class="btn btn-primary w-100" type="submit">Save Book</button>
+            <button name="addbook" class="btn btn-outline-primary w-100" type="submit">Add Book</button>
           </form>
         </div>
 
@@ -236,8 +253,8 @@ if (isset($_POST['addbookgenres'])) {
               echo'<td>' . $book['book_isbn'] . '</td>';
               echo'<td>' . $book['book_publication'] . '</td>';
               echo'<td>' . $book['book_publisher'] . '</td>';
-              echo'<td class="text-center">' . $book['Copies'] . '</td>';
-              echo'<td class="text-center"><span class="badge text-bg-success">' . $book['Available_Copies'] . '</span></td>';
+              echo'<td class="text-center">' . ($book['Copies'] ?? 0) . '</td>';
+              echo'<td class="text-center"><span class="badge text-bg-success">' . ($book['Available_Copies'] ?? 0) . '</span></td>';
               echo'<td class="text-end">';
               echo'<div class="btn-group" role="group">';
  
@@ -250,7 +267,13 @@ if (isset($_POST['addbookgenres'])) {
               
               >Edit</button>';
  
-              echo'<button type="button" class="btn btn-danger">Delete</button>';
+              echo '<button type="button" class="btn btn-sm btn-outline-danger" 
+              data-bs-toggle="modal" 
+              data-bs-target="#deleteBookModal"
+              data-book-id="' . $book['book_id'] . '"
+              data-book-title="' . htmlspecialchars($book['book_title'], ENT_QUOTES) . '"
+              >Delete</button>';
+
               echo'</div>';
               echo'</td>';
               echo'</tr>';
@@ -385,6 +408,29 @@ if (isset($_POST['addbookgenres'])) {
     </div>
   </div>
   
+  <div class="modal fade" id="deleteBookModal" tabindex="-1" aria-labelledby="deleteBookModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteBookModalLabel">Delete Book</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST">
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong id="delete_book_title_display"></strong>?</p>
+          <p class="text-danger small">This action cannot be undone.</p>
+          
+          <input type="hidden" name="book_id" id="delete_book_id">
+          <input type="hidden" name="book_title" id="delete_book_title_input">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="delete_books" class="btn btn-danger">Delete Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
@@ -423,6 +469,20 @@ editModal.addEventListener('show.bs.modal', function (event) {
   document.getElementById('edit_book_publisher').value = btn.getAttribute('data-book-publisher') || '';
 });
   </script>
+
+  <script>
+    const deleteModal = document.getElementById('deleteBookModal');
+      deleteModal.addEventListener('show.bs.modal', function (event) {
+      const btn = event.relatedTarget;
+      
+      const id = btn.getAttribute('data-book-id');
+      const title = btn.getAttribute('data-book-title');
+
+      document.getElementById('delete_book_id').value = id;
+      document.getElementById('delete_book_titles').value = title;
+      document.getElementById('delete_book_title').textContent = title;
+    });
+</script>
 </body>
 
 </html>
